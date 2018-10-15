@@ -27,13 +27,12 @@ public class JCuboidCollider : JCollider {
 
     public override bool TestCollisionWith(JPlaneCollider collider, out CollisionData collision)
     {
-        return CollisionSolvers.CubiodVsPlaneCollision(new Cuboid(transform.position, Dimensions / 2), new Plane(collider.Normal, collider.transform.position), out collision);
+        return CollisionSolvers.CuboidVsPlaneCollision(new Cuboid(transform.position, Dimensions / 2), new Plane(collider.Normal, collider.transform.position), out collision);
     }
 
     public override bool TestCollisionWith(JCuboidCollider collider, out CollisionData collision)
     {
-        collision = new CollisionData();
-        return false;
+        return CollisionSolvers.CuboidVsCuboidCollision(new Cuboid(transform.position, Dimensions / 2), new Cuboid(collider.transform.position, collider.Dimensions / 2), out collision);
     }
 
 }

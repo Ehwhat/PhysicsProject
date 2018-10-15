@@ -48,7 +48,7 @@ public class JPlaneCollider : JCollider
 
     public override bool TestCollisionWith(JCuboidCollider collider, out CollisionData collision)
     {
-        return CollisionSolvers.CubiodVsPlaneCollision(new Cuboid(collider.transform.position, collider.Dimensions / 2), new Plane(Normal, transform.position), out collision);
+        return CollisionSolvers.CuboidVsPlaneCollision(new Cuboid(collider.transform.position, collider.Dimensions / 2), new Plane(Normal, transform.position), out collision);
     }
 
 }
