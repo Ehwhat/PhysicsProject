@@ -232,6 +232,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\ApplyForceOnKeypress.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\CollisionData.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\CollisionSolvers.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\Shapes.cs" />
@@ -244,7 +245,6 @@
     <Compile Include="Assets\Scripts\PhysicsSystem\JPhysicsManager.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\JPlaneCollider.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\JRigidbody.cs" />
-    <Compile Include="Assets\Scripts\PhysicsSystem\JRigidbodyComponent.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\JSphereCollider.cs" />
     <Compile Include="Assets\Scripts\Spawner.cs" />
   </ItemGroup>

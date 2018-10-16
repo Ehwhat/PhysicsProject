@@ -26,6 +26,13 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
     [SerializeField]
     private float _mass = 1;
+
+    [SerializeField]
+    public float StaticFriction = 0.3f;
+
+    [SerializeField]
+    public float DynamicFriction = 0.1f;
+
     private Vector3 _currentForce;
 
     public JCollider[] _colliders;

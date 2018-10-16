@@ -69,28 +69,65 @@ public class JPhysicsManager : MonoBehaviour {
             Vector3 contactVelocity = velocityB - velocityA;
             float reactionForceMagnitude = Vector3.Dot(contactVelocity, normal);
 
-            if (reactionForceMagnitude < 0)
+            if (reactionForceMagnitude < 0.05)
             {
                 continue;
             }
-            
 
-            float j = (-(1.0f+ epsilon) * reactionForceMagnitude) / (bodyA.Mass + bodyB.Mass);
-            bodyA.SetVelocity(velocityA - ((j * bodyA.Mass)*normal));
-            bodyB.SetVelocity(velocityB + ((j * bodyB.Mass)*normal));
+            Vector3 tangent = (contactVelocity - Vector3.Dot(contactVelocity, normal) * normal).normalized;
+            float staticFrictionAverage = PythSolver(bodyA.StaticFriction, bodyB.StaticFriction);
+            float dynamicFrictionAverage = PythSolver(bodyA.DynamicFriction, bodyB.DynamicFriction);
+
+
+            float jt = -Vector3.Dot(contactVelocity, tangent) / (1 / bodyA.Mass + 1 / bodyB.Mass);
+            float j = -(1.0f + epsilon) * reactionForceMagnitude;
+            
+            Vector3 impulseReactionForce = (j*normal) / (bodyA.Mass + bodyB.Mass);
+
+            Vector3 frictionReactionForce;
+            if (Mathf.Abs(jt) < j * staticFrictionAverage)
+            {
+                frictionReactionForce = jt * tangent;
+            }
+            else
+            {
+                frictionReactionForce = -j * tangent * dynamicFrictionAverage;
+            }
+
+            Vector3 bodyAForce = (impulseReactionForce - frictionReactionForce) * (1 / bodyA.Mass);
+            Vector3 bodyBForce = (impulseReactionForce - frictionReactionForce) * (1 / bodyB.Mass);
+
+            bodyA.SetVelocity(velocityA - bodyAForce);
+            bodyB.SetVelocity(velocityB + bodyBForce);
             CorrectPositions(collision);
+
+            if(Mathf.Abs(bodyA.Velocity.magnitude) < 0.1f)
+            {
+                bodyA.SetVelocity(Vector3.zero);
+            }
+
+            if (Mathf.Abs(bodyB.Velocity.magnitude) < 0.1f)
+            {
+                bodyB.SetVelocity(Vector3.zero);
+            }
+
         }
+    }
+
+    private float PythSolver(float a, float b)
+    {
+        return Mathf.Sqrt(a * a + b * b);
     }
 
     private void CorrectPositions(JCollision collision)
     {
-        const float k_slop = 0.01f; // Penetration allowance
-        const float percent = 0.6f; // Penetration percentage to correct
+        const float slop = 0.01f;
+        const float percent = 0.6f;
 
         JRigidbody bodyA = collision.colliderA.owningBody;
         JRigidbody bodyB = collision.colliderB.owningBody;
 
-        Vector3 correction = (Mathf.Max(collision.collisionDepth - k_slop, 0.0f) / (bodyA.Mass + bodyB.Mass)) * percent * -collision.collisionNormal;
+        Vector3 correction = (Mathf.Max(collision.collisionDepth - slop, 0.0f) / (bodyA.Mass + bodyB.Mass)) * percent * -collision.collisionNormal;
         if(!bodyA._isKinematic)
             bodyA.transform.position -= bodyA.Mass * correction;
         if (!bodyB._isKinematic)
