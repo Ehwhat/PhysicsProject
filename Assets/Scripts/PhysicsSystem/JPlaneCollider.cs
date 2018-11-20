@@ -6,9 +6,19 @@ using CollisionShapes;
 public class JPlaneCollider : JCollider
 {
 
-    public Vector3 Normal = new Vector3(0, 1, 0);
+    public Vector3 Normal
+    {
+        get { return transform.up; }
+    }
+    public float Distance
+    {
+        get { return Vector3.Dot(transform.position, Normal); }
+    }
     private Bounds bounds;
     public Plane plane;
+
+    [SerializeField]
+    private Transform _testTransform;
 
     public override Bounds GetBounds()
     {
@@ -51,4 +61,27 @@ public class JPlaneCollider : JCollider
         return CollisionSolvers.CuboidVsPlaneCollision(new Cuboid(collider.transform.position, collider.Dimensions / 2), new Plane(Normal, transform.position), out collision);
     }
 
+    public override Vector3 GetClosestPoint(Vector3 fromPoint)
+    {
+        float dotProduct = Vector3.Dot(Normal, fromPoint);
+        float pointDistance = dotProduct - Distance;
+        return fromPoint - Normal * pointDistance;
+        
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        var oldMatix = Gizmos.matrix;
+        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
+
+        Gizmos.DrawCube(Vector3.zero, new Vector3(10000, 0, 10000));
+
+        Gizmos.matrix = oldMatix;
+
+        Vector3 closestPoint = GetClosestPoint(_testTransform.position);
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(closestPoint, 0.1f);
+
+    }
 }

@@ -42,6 +42,8 @@ public abstract class JCollider : JColliderBase {
     public abstract bool TestCollisionWith(JPlaneCollider collider, out CollisionData collision);
     public abstract bool TestCollisionWith(JCuboidCollider collider, out CollisionData collision);
 
+    public abstract Vector3 GetClosestPoint(Vector3 fromPoint);
+
     public virtual void OnEnable()
     {
     }
