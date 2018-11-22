@@ -39,6 +39,13 @@ public class JCollision {
         this.colliderB = colliderB;
     }
 
+    public JCollision(JCollider colliderA, JCollider colliderB)
+    {
+        valid = false;
+        this.colliderA = colliderA;
+        this.colliderB = colliderB;
+    }
+
     public override bool Equals(object obj)
     {
         if(obj == null)

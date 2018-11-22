@@ -61,7 +61,7 @@ public class JPlaneCollider : JCollider
         return CollisionSolvers.CuboidVsPlaneCollision(new Cuboid(collider.transform.position, collider.Dimensions / 2), new Plane(Normal, transform.position), out collision);
     }
 
-    public override Vector3 GetClosestPoint(Vector3 fromPoint)
+    public override Vector3 GetClosestPoint(Vector3 fromPoint, bool clampToEdge = false)
     {
         float dotProduct = Vector3.Dot(Normal, fromPoint);
         float pointDistance = dotProduct - Distance;
@@ -75,7 +75,7 @@ public class JPlaneCollider : JCollider
         var oldMatix = Gizmos.matrix;
         Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
 
-        Gizmos.DrawCube(Vector3.zero, new Vector3(10000, 0, 10000));
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(10000, 0, 10000));
 
         Gizmos.matrix = oldMatix;
 
@@ -83,5 +83,12 @@ public class JPlaneCollider : JCollider
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(closestPoint, 0.1f);
 
+    }
+
+    public override bool IsPointInside(Vector3 point)
+    {
+        float dotProduct = Vector3.Dot(Normal, point);
+        float pointDistance = dotProduct - Distance;
+        return pointDistance <= 0;
     }
 }

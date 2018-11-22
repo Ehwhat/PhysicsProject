@@ -31,13 +31,18 @@ public class JSphereCollider : JCollider {
         return bounds;
     }
 
-    public override Vector3 GetClosestPoint(Vector3 fromPoint)
+    public override Vector3 GetClosestPoint(Vector3 fromPoint, bool clampToEdge = false)
     {
-        if(Vector3.Distance(transform.position, fromPoint) > _radius)
+        if(Vector3.Distance(transform.position, fromPoint) > _radius || clampToEdge)
         {
-            return (fromPoint - transform.position).normalized * _radius;
+            return transform.position + (fromPoint - transform.position).normalized * _radius;
         }
         return fromPoint;
+    }
+
+    public override bool IsPointInside(Vector3 point)
+    {
+        return Vector3.Distance(transform.position, point) <= _radius;
     }
 
     public override bool TestCollisionWith(JSphereCollider collider, out CollisionData collision)

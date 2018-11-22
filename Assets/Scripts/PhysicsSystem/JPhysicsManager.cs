@@ -139,14 +139,19 @@ public class JPhysicsManager : MonoBehaviour {
 
     private void CheckAllBodiesForCollisions()
     {
+        HashSet<CompareablePair<JRigidbody>> checkedPairs = new HashSet<CompareablePair<JRigidbody>>();
         _frameCollisions = new List<JCollision>();
         for (int i = 0; i < _bodies.Count; i++)
         {
             for (int j = 0; j < _bodies.Count; j++)
             {
                 if (i == j) continue;
-
-                GetBodyCollisions(_bodies[i], _bodies[j], ref _frameCollisions);
+                CompareablePair<JRigidbody> pair = new CompareablePair<JRigidbody>(_bodies[i], _bodies[j]);
+                if (!checkedPairs.Contains(pair))
+                {
+                    GetBodyCollisions(_bodies[i], _bodies[j], ref _frameCollisions);
+                    checkedPairs.Add(pair);
+                }
             }
         }
     }
@@ -170,7 +175,7 @@ public class JPhysicsManager : MonoBehaviour {
             for (int j = 0; j < collidersB.Length; j++)
             {
                 JCollision collision;
-                if (collidersA[i].TestCollisionWith(collidersB[j], out collision))
+                if (JCollisionSolver.SolveCollision(collidersA[i], collidersB[j], out collision))
                 {
                     collisions.Add(collision);
                 }

@@ -6,6 +6,17 @@ using CollisionShapes;
 public class JCuboidCollider : JCollider {
 
     public Vector3 Dimensions = new Vector3(1, 1, 1);
+
+    public Vector3 Min
+    {
+        get { return -Dimensions * 0.5f; }
+    }
+
+    public Vector3 Max
+    {
+        get { return Dimensions * 0.5f; }
+    }
+
     Bounds bounds;
 
     [SerializeField]
@@ -22,15 +33,45 @@ public class JCuboidCollider : JCollider {
         return bounds;
     }
 
-    public override Vector3 GetClosestPoint(Vector3 fromPoint)
+    public override Vector3 GetClosestPoint(Vector3 fromPoint, bool clampToEdge = false)
     {
         Vector3 localPoint = transform.InverseTransformPoint(fromPoint);
 
-        localPoint.x = Mathf.Clamp(localPoint.x, bounds.min.x, bounds.max.x);
-        localPoint.y = Mathf.Clamp(localPoint.y, bounds.min.y, bounds.max.y);
-        localPoint.z = Mathf.Clamp(localPoint.z, bounds.min.z, bounds.max.z);
+        if (true)
+        {
+            if(Mathf.Abs(localPoint.x) >= Mathf.Abs(localPoint.y) && Mathf.Abs(localPoint.x) >= Mathf.Abs(localPoint.z) && localPoint.x < Max.x && localPoint.x > Min.x)
+            {
+                localPoint.x = Max.x * Mathf.Sign(localPoint.x);
+            }else if(Mathf.Abs(localPoint.y) >= Mathf.Abs(localPoint.x) && Mathf.Abs(localPoint.y) >= Mathf.Abs(localPoint.z) && localPoint.y < Max.y && localPoint.y > Min.y)
+            {
+                localPoint.y = Max.y * Mathf.Sign(localPoint.y);
+            }
+            else if (Mathf.Abs(localPoint.z) >= Mathf.Abs(localPoint.x) && Mathf.Abs(localPoint.z) >= Mathf.Abs(localPoint.y) && localPoint.z < Max.z && localPoint.z > Min.z)
+            {
+                localPoint.z = Max.z * Mathf.Sign(localPoint.z);
+            }
+        }
+
+        localPoint.x = Mathf.Clamp(localPoint.x, Min.x, Max.x);
+        localPoint.y = Mathf.Clamp(localPoint.y, Min.y, Max.y);
+        localPoint.z = Mathf.Clamp(localPoint.z, Min.z, Max.z);
 
         return transform.TransformPoint(localPoint);
+
+    }
+
+    public override bool IsPointInside(Vector3 point)
+    {
+        Vector3 localPoint = transform.InverseTransformPoint(point);
+
+        return
+            localPoint.x >= Min.x &&
+            localPoint.y >= Min.y &&
+            localPoint.z >= Min.z &&
+
+            localPoint.x <= Max.x &&
+            localPoint.y <= Max.y &&
+            localPoint.z <= Max.z;
 
     }
 
