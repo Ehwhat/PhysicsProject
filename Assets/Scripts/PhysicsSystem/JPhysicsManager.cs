@@ -52,7 +52,7 @@ public class JPhysicsManager : MonoBehaviour {
             testPoint = hit.hitPoint;
             if (Input.GetMouseButtonDown(0))
             {
-                hit.hitCollider.owningBody.ApplyImpulse(ray.direction * 10);
+                hit.hitCollider.owningBody.ApplyAngularImpulse(hit.hitPoint,ray.direction * 10);
             }
         }
         else
@@ -86,60 +86,75 @@ public class JPhysicsManager : MonoBehaviour {
             JCollision collision = _frameCollisions[i];
             JRigidbody bodyA = collision.colliderA.owningBody;
             JRigidbody bodyB = collision.colliderB.owningBody;
-            if(bodyA == null && bodyB == null)
+            if(bodyA == null || bodyB == null)
             {
                 continue;
             }
 
-            Vector3 normal = collision.collisionNormal;
+            Vector3 normal = collision.collisionNormal.normalized;
             Vector3 velocityA = bodyA.Velocity;
             Vector3 velocityB = bodyB.Velocity;
+            Matrix4x4 invTensorA = bodyA._colliders[0].GetInverseTensor(bodyA.Mass);
+            Matrix4x4 invTensorB = bodyB._colliders[0].GetInverseTensor(bodyB.Mass);
 
-            if(velocityA.sqrMagnitude == 0 && velocityB.sqrMagnitude == 0)
-            {
-                if (!bodyA._isKinematic)
-                {
-                    velocityA = normal;
-                }else if (!bodyB._isKinematic)
-                {
-                    velocityB = normal;
-                }
-            }
-
-            Vector3 contactVelocity = velocityB - velocityA;
-            float reactionForceMagnitude = Vector3.Dot(contactVelocity, normal);
-
-            if (reactionForceMagnitude < 0.05)
-            {
-                continue;
-            }
-
-            Vector3 tangent = (contactVelocity - Vector3.Dot(contactVelocity, normal) * normal).normalized;
-            float staticFrictionAverage = PythSolver(bodyA.StaticFriction, bodyB.StaticFriction);
-            float dynamicFrictionAverage = PythSolver(bodyA.DynamicFriction, bodyB.DynamicFriction);
-
-
-            float jt = -Vector3.Dot(contactVelocity, tangent) / (1 / bodyA.Mass + 1 / bodyB.Mass);
-            float j = -(1.0f + epsilon) * reactionForceMagnitude;
             
-            Vector3 impulseReactionForce = (j*normal) / (bodyA.Mass + bodyB.Mass);
 
-            Vector3 frictionReactionForce;
-            if (Mathf.Abs(jt) < j * staticFrictionAverage)
+            Debug.Log(collision.collisionPoints.Count);
+
+            for (int c = 0; c < collision.collisionPoints.Count; c++)
             {
-                frictionReactionForce = jt * tangent;
-            }
-            else
-            {
-                frictionReactionForce = -j * tangent * dynamicFrictionAverage;
-            }
 
-            Vector3 bodyAForce = (impulseReactionForce - frictionReactionForce) * (1 / bodyA.Mass);
-            Vector3 bodyBForce = (impulseReactionForce - frictionReactionForce) * (1 / bodyB.Mass);
+                Vector3 relativeContactPointA = collision.collisionPoints[c] - bodyA.transform.position;
+                Vector3 relativeContactPointB = collision.collisionPoints[c] - bodyB.transform.position;
 
-            bodyA.SetVelocity(velocityA - bodyAForce);
-            bodyB.SetVelocity(velocityB + bodyBForce);
-            CorrectPositions(collision);
+                Vector3 contactVelocity = 
+                    ((velocityB + Vector3.Cross(bodyB.AngularVelocity, relativeContactPointB)) -
+                    (velocityA + Vector3.Cross(bodyA.AngularVelocity, relativeContactPointA)));
+                float reactionForceMagnitude = Vector3.Dot(contactVelocity, normal);
+
+                if (reactionForceMagnitude < 0.05)
+                {
+                    continue;
+                }
+
+                Vector3 tangent = (contactVelocity - Vector3.Dot(contactVelocity, normal) * normal).normalized;
+                float staticFrictionAverage = PythSolver(bodyA.StaticFriction, bodyB.StaticFriction);
+                float dynamicFrictionAverage = PythSolver(bodyA.DynamicFriction, bodyB.DynamicFriction);
+
+                float numerator = (-(1.0f + epsilon) * reactionForceMagnitude);
+
+                float d1 = (bodyA.GetInvMass() + bodyB.GetInvMass());
+                Vector3 d2 = Vector3.Cross(invTensorA * Vector3.Cross(relativeContactPointA, normal), relativeContactPointA);
+                Vector3 d3 = Vector3.Cross(invTensorB * Vector3.Cross(relativeContactPointB, normal), relativeContactPointB);
+                float denominator = d1 + Vector3.Dot(normal, d2 + d3);
+
+                float jt = -Vector3.Dot(contactVelocity, tangent) / (bodyA.GetInvMass() + bodyB.GetInvMass());
+            
+                float j = (denominator == 0) ? 0 : (numerator / denominator)/(float)collision.collisionPoints.Count;
+
+                Vector3 impulseReactionForce = (j * normal);
+
+                //Vector3 frictionReactionForce;
+                //if (Mathf.Abs(jt) < j * staticFrictionAverage)
+                //{
+                //    frictionReactionForce = jt * tangent;
+                //}
+                //else
+                //{
+                //    frictionReactionForce = -j * tangent * dynamicFrictionAverage;
+                //}
+
+                Vector3 bodyAForce = (impulseReactionForce) * bodyA.GetInvMass();
+                Vector3 bodyBForce = (impulseReactionForce) * bodyB.GetInvMass();
+
+                bodyA.SetVelocity(velocityA - bodyAForce);
+                bodyB.SetVelocity(velocityB + bodyBForce);
+
+                bodyA.AngularVelocity = bodyA.AngularVelocity - (Vector3)(invTensorA * Vector3.Cross(relativeContactPointA, (impulseReactionForce)));
+                bodyB.AngularVelocity = bodyB.AngularVelocity - (Vector3)(invTensorB * Vector3.Cross(relativeContactPointB, (impulseReactionForce)));
+
+                CorrectPositions(collision);
+            }
 
             if(Mathf.Abs(bodyA.Velocity.magnitude) < 0.1f)
             {
@@ -149,6 +164,16 @@ public class JPhysicsManager : MonoBehaviour {
             if (Mathf.Abs(bodyB.Velocity.magnitude) < 0.1f)
             {
                 bodyB.SetVelocity(Vector3.zero);
+            }
+
+            if (Mathf.Abs(bodyA.AngularVelocity.magnitude) < 0.1f)
+            {
+                bodyA.AngularVelocity = (Vector3.zero);
+            }
+
+            if (Mathf.Abs(bodyB.AngularVelocity.magnitude) < 0.1f)
+            {
+                bodyB.AngularVelocity = (Vector3.zero);
             }
 
         }

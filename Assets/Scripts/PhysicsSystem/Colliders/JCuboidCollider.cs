@@ -5,13 +5,6 @@ using CollisionShapes;
 
 public class JCuboidCollider : JMeshCollider {
 
-    public Vector3 Dimensions = new Vector3(1, 1, 1);
-
-    public Vector3 Extents
-    {
-        get { return Dimensions * 0.5f; }
-    }
-
     public Vector3 LocalMin
     {
         get { return -Dimensions * 0.5f; }
@@ -32,10 +25,21 @@ public class JCuboidCollider : JMeshCollider {
         get { return transform.TransformPoint(LocalMax); }
     }
 
+    [SerializeField]
+    public Vector3 Dimensions;
     Bounds bounds;
 
     [SerializeField]
     private Transform _testTransform;
+
+    private Matrix4x4 scaleMatrix;
+    private Vector3 Extents;
+
+    private void Start()
+    {
+        scaleMatrix = Matrix4x4.Scale(transform.localScale);
+        Extents = Dimensions * 0.5f;
+    }
 
     public override Bounds GenerateBounds()
     {
@@ -95,11 +99,30 @@ public class JCuboidCollider : JMeshCollider {
 
     }
 
+    public override Matrix4x4 GetInverseTensor(float mass)
+    {
+        Vector3 DimensionSquared = Dimensions;
+        DimensionSquared.Scale(Dimensions);
+        float multiplier = (1.0f / 12f);
+
+        float xComponent = (DimensionSquared.y + DimensionSquared.z) * mass * multiplier;
+        float yComponent = (DimensionSquared.x + DimensionSquared.z) * mass * multiplier;
+        float zComponent = (DimensionSquared.x + DimensionSquared.y) * mass * multiplier;
+
+        return new Matrix4x4(
+            new Vector4(xComponent, 0, 0, 0),
+            new Vector4(0, yComponent, 0, 0),
+            new Vector4(0, 0, zComponent, 0),
+            new Vector4(0, 0, 0, 1)
+            ).inverse;
+
+    }
+
     private void OnDrawGizmos()
     {
         GenerateBounds();
         var oldMatrix = Gizmos.matrix;
-        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
+        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
 
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(Vector3.zero, Dimensions);
@@ -115,16 +138,21 @@ public class JCuboidCollider : JMeshCollider {
     {
         Vector3[] verts = new Vector3[8];
 
-        verts[0] = transform.position - (transform.right * Extents.x) - (transform.up * Extents.y) - (transform.forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMin.z);
-        verts[1] = transform.position + (transform.right * Extents.x) + (transform.up * Extents.y) + (transform.forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMax.z);
+        Vector3 position = transform.position;
+        Vector3 up = transform.up;
+        Vector3 right = transform.right;
+        Vector3 forward = transform.forward;
 
-        verts[2] = transform.position + (transform.right * Extents.x) - (transform.up * Extents.y) - (transform.forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMin.z);
-        verts[3] = transform.position - (transform.right * Extents.x) + (transform.up * Extents.y) - (transform.forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMin.z);
-        verts[4] = transform.position - (transform.right * Extents.x) - (transform.up * Extents.y) + (transform.forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMax.z);
+        verts[0] = position - (right * Extents.x) - (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMin.z);
+        verts[1] = position + (right * Extents.x) + (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMax.z);
 
-        verts[5] = transform.position + (transform.right * Extents.x) + (transform.up * Extents.y) - (transform.forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMin.z);
-        verts[6] = transform.position + (transform.right * Extents.x) - (transform.up * Extents.y) + (transform.forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMax.z);
-        verts[7] = transform.position - (transform.right * Extents.x) + (transform.up * Extents.y) + (transform.forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMax.z);
+        verts[2] = position + (right * Extents.x) - (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMin.z);
+        verts[3] = position - (right * Extents.x) + (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMin.z);
+        verts[4] = position - (right * Extents.x) - (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMax.z);
+
+        verts[5] = position + (right * Extents.x) + (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMin.z);
+        verts[6] = position + (right * Extents.x) - (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMax.z);
+        verts[7] = position - (right * Extents.x) + (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMax.z);
 
         return verts;
     }

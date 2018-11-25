@@ -20,6 +20,7 @@ public class JRigidbody : MonoBehaviour, IJBounds {
     }
 
     public Vector3 Velocity { get; private set; }
+    public Vector3 AngularVelocity { get; set; }
 
     public Vector3 lastForce;
     public Vector3 localCenterOfMass;
@@ -34,6 +35,7 @@ public class JRigidbody : MonoBehaviour, IJBounds {
     public float DynamicFriction = 0.1f;
 
     private Vector3 _currentForce;
+    private Vector3 _currentTorque;
 
     public JCollider[] _colliders;
     private int _childCount;
@@ -88,6 +90,25 @@ public class JRigidbody : MonoBehaviour, IJBounds {
         Velocity += impulse * _mass;
     }
 
+    public void ApplyAngularImpulse(Vector3 point, Vector3 impulse)
+    {
+        if (_isKinematic)
+            return;
+        Vector3 centerOfMass = GetCenterOfMass();
+        Vector3 torque = Vector3.Cross(point - centerOfMass, impulse);
+        Vector3 angularAcceleration = _colliders[0].GetInverseTensor(Mass) * torque;
+        AngularVelocity += angularAcceleration;
+    }
+
+    public float GetInvMass()
+    {
+        if(Mass == 0)
+        {
+            return 0;
+        }
+        return 1 / Mass;
+    }
+
     public void SetVelocity(Vector3 newVelocity)
     {
         if (!_isKinematic)
@@ -109,6 +130,11 @@ public class JRigidbody : MonoBehaviour, IJBounds {
             Vector3 _acceleration = _currentForce / _mass;
             Velocity += _acceleration * dt;
             transform.position += Velocity * dt;
+
+            Vector3 angularAcceleration = _colliders[0].GetInverseTensor(Mass) * _currentTorque;
+            AngularVelocity += angularAcceleration * dt;
+            transform.Rotate(AngularVelocity * dt);
+
 
             lastForce = _currentForce;
             _currentForce = Vector3.zero;

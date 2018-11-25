@@ -81,4 +81,9 @@ public class JPlaneCollider : JCollider
         hitData = new JRaycastHit();
         return false;
     }
+
+    public override Matrix4x4 GetInverseTensor(float mass)
+    {
+        return Matrix4x4.identity;
+    }
 }

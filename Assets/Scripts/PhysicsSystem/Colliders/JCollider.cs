@@ -12,6 +12,8 @@ public abstract class JCollider : JColliderBase {
 
     public abstract bool Raycast(JRay ray, out JRaycastHit hitData);
 
+    public abstract Matrix4x4 GetInverseTensor(float mass);
+
     public virtual void OnEnable()
     {
     }

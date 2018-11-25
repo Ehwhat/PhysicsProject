@@ -95,4 +95,22 @@ public class JSphereCollider : JCollider {
         return true;
 
     }
+
+    public override Matrix4x4 GetInverseTensor(float mass)
+    {
+        float radiusSquared = Radius * Radius;
+        float multiplier = (2.0f / 5f);
+
+        float xComponent = radiusSquared * mass * multiplier;
+        float yComponent = radiusSquared * mass * multiplier;
+        float zComponent = radiusSquared * mass * multiplier;
+
+        return new Matrix4x4(
+            new Vector4(xComponent, 0, 0, 0),
+            new Vector4(0, yComponent, 0, 0),
+            new Vector4(0, 0, zComponent, 0),
+            new Vector4(0, 0, 0, 1)
+            ).inverse;
+
+    }
 }
