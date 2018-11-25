@@ -255,6 +255,8 @@
     <Compile Include="Assets\Scripts\PhysicsSystem\CollisionSolvers\JSpherePlaneSolver.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\CollisionSolvers\JSphereSphereSolver.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\JPhysicsManager.cs" />
+    <Compile Include="Assets\Scripts\PhysicsSystem\JRay.cs" />
+    <Compile Include="Assets\Scripts\PhysicsSystem\JRaycastHit.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\JRigidbody.cs" />
     <Compile Include="Assets\Scripts\Spawner.cs" />
     <Compile Include="Assets\Scripts\Utility\CompareablePair.cs" />

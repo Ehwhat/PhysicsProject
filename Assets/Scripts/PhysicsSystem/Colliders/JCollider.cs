@@ -10,6 +10,8 @@ public abstract class JCollider : JColliderBase {
     public abstract Vector3 GetClosestPoint(Vector3 fromPoint, bool clampToEdge = false);
     public abstract bool IsPointInside(Vector3 point);
 
+    public abstract bool Raycast(JRay ray, out JRaycastHit hitData);
+
     public virtual void OnEnable()
     {
     }

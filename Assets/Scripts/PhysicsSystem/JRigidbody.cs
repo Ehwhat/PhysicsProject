@@ -76,11 +76,15 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
     public void ApplyForce(Vector3 force)
     {
+        if (_isKinematic)
+            return;
         _currentForce += force;
     }
 
     public void ApplyImpulse(Vector3 impulse)
     {
+        if (_isKinematic)
+            return;
         Velocity += impulse * _mass;
     }
 

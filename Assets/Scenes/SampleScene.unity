@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657868, g: 0.4964127, b: 0.57481724, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -585,21 +585,21 @@ Prefab:
     - target: {fileID: 23007663070826124, guid: 4033c6885af389c4080e7196e93f257f,
         type: 2}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114821264651288206, guid: 4033c6885af389c4080e7196e93f257f,
         type: 2}
       propertyPath: _isKinematic
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114821264651288206, guid: 4033c6885af389c4080e7196e93f257f,
         type: 2}
       propertyPath: _isAffectedByGravity
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1339083293575250, guid: 4033c6885af389c4080e7196e93f257f, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114156428615957632, guid: 4033c6885af389c4080e7196e93f257f, type: 2}
@@ -893,7 +893,7 @@ GameObject:
   - component: {fileID: 534669903}
   m_Layer: 0
   m_Name: Main Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2767,7 +2767,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -5.825
+      value: -6.756
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalPosition.y
@@ -2779,19 +2779,19 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0.22896358
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.2607232
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.06379856
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.93569696
       objectReference: {fileID: 0}
     - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_RootOrder
@@ -2815,6 +2815,18 @@ Prefab:
     - target: {fileID: 1986210577486840, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
       propertyPath: m_Name
       value: Cube 1 (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -31.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 4586592849226790, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -27.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1986210577486840, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d148a59d3d010dd4ea482c25ed5f4485, type: 2}
@@ -3268,7 +3280,7 @@ Prefab:
     - target: {fileID: 114545314030449452, guid: d148a59d3d010dd4ea482c25ed5f4485,
         type: 2}
       propertyPath: _isKinematic
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114921703092553350, guid: d148a59d3d010dd4ea482c25ed5f4485,
         type: 2}

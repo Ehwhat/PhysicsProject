@@ -10,6 +10,9 @@ public class JPhysicsManager : MonoBehaviour {
     private static List<JRigidbody> _bodies = new List<JRigidbody>();
     private List<JCollision> _frameCollisions = new List<JCollision>();
 
+    private bool wasHit = false;
+    private Vector3 testPoint;
+
     public static void RegisterBody(JRigidbody body)
     {
         _bodies.Add(body);
@@ -19,6 +22,43 @@ public class JPhysicsManager : MonoBehaviour {
     public static void DeregisterBody(JRigidbody body)
     {
         _bodies.Remove(body);
+    }
+
+    public bool Raycast(JRay ray, out JRaycastHit hitData)
+    {
+        for (int i = 0; i < _bodies.Count; i++)
+        {
+            JCollider[] colliders = _bodies[i].GetColliders();
+            for (int j = 0; j < colliders.Length; j++)
+            {
+                if(colliders[j].Raycast(ray,out hitData))
+                {
+                    return true;
+                }
+            }
+        }
+        hitData = new JRaycastHit();
+        hitData.hit = false;
+        return false;
+    }
+
+    private void Update()
+    {
+        JRaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Raycast(new JRay(ray.origin, ray.direction), out hit))
+        {
+            wasHit = true;
+            testPoint = hit.hitPoint;
+            if (Input.GetMouseButtonDown(0))
+            {
+                hit.hitCollider.owningBody.ApplyImpulse(ray.direction * 10);
+            }
+        }
+        else
+        {
+            wasHit = false;
+        }
     }
 
     private void FixedUpdate()
@@ -187,6 +227,15 @@ public class JPhysicsManager : MonoBehaviour {
     private bool CheckIfBoundsCollide(Bounds boundA, Bounds boundB)
     {
         return boundA.Intersects(boundB);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        if (wasHit)
+        {
+            Gizmos.DrawSphere(testPoint, 0.1f);
+        }
     }
 
 }

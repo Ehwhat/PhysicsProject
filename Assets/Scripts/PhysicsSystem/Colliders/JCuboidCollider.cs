@@ -189,4 +189,71 @@ public class JCuboidCollider : JMeshCollider {
 
     }
 
+    public override bool Raycast(JRay ray, out JRaycastHit hitData)
+    {
+        hitData = new JRaycastHit();
+        hitData.hit = false;
+
+        Vector3 directionToCuboid = transform.position - ray.origin;
+
+        Vector3 rayDirectionDots = new Vector3(
+            Vector3.Dot(transform.right, ray.direction) + 0.0001f, // Super hacky cheat to make sure we don't divide by 0 later
+            Vector3.Dot(transform.up, ray.direction) + 0.0001f,
+            Vector3.Dot(transform.forward, ray.direction) + 0.0001f
+            );
+        Vector3 cuboidDirectionDots = new Vector3(
+            Vector3.Dot(transform.right, directionToCuboid),
+            Vector3.Dot(transform.up, directionToCuboid),
+            Vector3.Dot(transform.forward, directionToCuboid)
+            );
+
+        float[] distances = new float[6];
+        for (int i = 0; i < 3; i++)
+        {
+            /*if(-cuboidDirectionDots[i] - Extents[i] > 0 || -cuboidDirectionDots[i] + Extents[i] < 0)
+            {
+                return false;
+            }*/
+            distances[i * 2 + 0] = (cuboidDirectionDots[i] + Extents[i]) / rayDirectionDots[i];
+            distances[i * 2 + 1] = (cuboidDirectionDots[i] - Extents[i]) / rayDirectionDots[i];
+        }
+
+        float largestMinimumDistance = Mathf.Max(
+                Mathf.Min(distances[0], distances[1]),
+                Mathf.Min(distances[2], distances[3]),
+                Mathf.Min(distances[4], distances[5])
+            );
+
+        float smallestMaximumDistance = Mathf.Min(
+                Mathf.Max(distances[0], distances[1]),
+                Mathf.Max(distances[2], distances[3]),
+                Mathf.Max(distances[4], distances[5])
+            );
+
+        if(smallestMaximumDistance < 0) // This means our best point is behind the origin, and that doesn't make sense, so we'll cull it.
+        {
+            return false;
+        }
+        if(largestMinimumDistance > smallestMaximumDistance)
+        {
+            return false;
+        }
+
+        hitData.hit = true;
+        hitData.hitCollider = this;
+        hitData.origin = ray.origin;
+
+        if(largestMinimumDistance < 0)
+        {
+            hitData.distance = smallestMaximumDistance;
+        }
+        else
+        {
+            hitData.distance = largestMinimumDistance;
+        }
+
+        hitData.hitPoint = ray.origin + (ray.direction * hitData.distance);
+        return true;
+
+    }
 }

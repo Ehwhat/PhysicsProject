@@ -59,4 +59,40 @@ public class JSphereCollider : JCollider {
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(closestPoint, 0.1f);
     }
+
+    public override bool Raycast(JRay ray, out JRaycastHit hitData)
+    {
+        hitData = new JRaycastHit();
+        Vector3 directionToSphere = transform.position - ray.origin;
+        float radiusSquared = Radius * Radius;
+
+        float dotProduct = Vector3.Dot(directionToSphere, ray.direction);
+        float offset = directionToSphere.sqrMagnitude - (dotProduct * dotProduct);
+        float lengthFromSphereSurfaceToOffset = Mathf.Sqrt(radiusSquared - offset);
+
+        hitData.hit = false;
+        hitData.origin = ray.origin;
+
+        if(radiusSquared - offset < 0)
+        {
+            return false;
+        }
+
+        hitData.hit = true;
+        hitData.hitCollider = this;
+
+        if(directionToSphere.sqrMagnitude < radiusSquared) // If it's inside the sphere
+        {
+            hitData.distance = dotProduct + lengthFromSphereSurfaceToOffset;
+        }
+        else
+        {
+            hitData.distance = dotProduct - lengthFromSphereSurfaceToOffset;
+        }
+
+        hitData.hitPoint = ray.origin + (ray.direction * hitData.distance);
+
+        return true;
+
+    }
 }

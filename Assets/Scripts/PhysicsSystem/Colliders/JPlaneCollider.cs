@@ -75,4 +75,10 @@ public class JPlaneCollider : JCollider
         float pointDistance = dotProduct - Distance;
         return pointDistance <= 0;
     }
+
+    public override bool Raycast(JRay ray, out JRaycastHit hitData)
+    {
+        hitData = new JRaycastHit();
+        return false;
+    }
 }
