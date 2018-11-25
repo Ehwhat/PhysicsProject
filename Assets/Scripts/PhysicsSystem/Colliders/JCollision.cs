@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class JCollision {
 
-    public bool valid;
+    public bool valid = false;
 
-    public Vector3 collisionPoint;
-    public Vector3 collisionNormal;
-    public float collisionDepth;
+    public Vector3 collisionNormal = Vector3.zero;
+    public float collisionDepth = 0;
+    public List<Vector3> collisionPoints = new List<Vector3>();
 
     public JCollider colliderA;
 
@@ -19,22 +19,12 @@ public class JCollision {
         valid = false;
     }
 
-    public JCollision(Vector3 point, Vector3 normal, float depth, JCollider colliderA, JCollider colliderB)
+    public JCollision(List<Vector3> points, Vector3 normal, float depth, JCollider colliderA, JCollider colliderB)
     {
         valid = true;
-        collisionPoint = point;
+        collisionPoints = points;
         collisionNormal = normal;
         collisionDepth = depth;
-        this.colliderA = colliderA;
-        this.colliderB = colliderB;
-    }
-
-    public JCollision(CollisionData data, JCollider colliderA, JCollider colliderB)
-    {
-        valid = true;
-        collisionPoint = data.collisionPoint;
-        collisionNormal = data.collisionNormal;
-        collisionDepth = data.collisionDepth;
         this.colliderA = colliderA;
         this.colliderB = colliderB;
     }
@@ -44,6 +34,20 @@ public class JCollision {
         valid = false;
         this.colliderA = colliderA;
         this.colliderB = colliderB;
+    }
+
+    public Vector3 AverageCollisionPoint()
+    {
+        if(collisionPoints.Count < 1)
+        {
+            return Vector3.zero;
+        }
+        Vector3 result = collisionPoints[0];
+        for (int i = 1; i < collisionPoints.Count; i++)
+        {
+            result += collisionPoints[i];
+        }
+        return result /= collisionPoints.Count;
     }
 
     public override bool Equals(object obj)

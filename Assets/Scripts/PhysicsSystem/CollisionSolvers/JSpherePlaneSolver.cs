@@ -15,10 +15,10 @@ public class JSpherePlaneSolver : JCollisionSolver<JSphereCollider, JPlaneCollid
         if (colliderB.IsPointInside(closestPointB))
         {
             float collisionDepth = Vector3.Distance(closestPointA, closestPointB);
-            Vector3 collisionPoint = closestPointA + (closestPointB * 0.5f);
             Vector3 collisionNormal = (closestPointA - closestPointB).normalized;
+            List<Vector3> contacts = new List<Vector3>() { closestPointA + (closestPointB * 0.5f) };
 
-            collision = new JCollision(collisionPoint, collisionNormal, collisionDepth, colliderA, colliderB);
+            collision = new JCollision(contacts, collisionNormal, collisionDepth, colliderA, colliderB);
             return true;
         }
         collision = null;

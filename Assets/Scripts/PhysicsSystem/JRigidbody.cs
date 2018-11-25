@@ -94,7 +94,7 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
     public void Simulate(float dt)
     {
-        
+        GenerateBounds();
         if (!_isKinematic)
         {
             if (_isAffectedByGravity)

@@ -45,22 +45,6 @@ public class JPlaneCollider : JCollider
         transform.up = Normal;
     }
 
-    public override bool TestCollisionWith(JSphereCollider collider, out CollisionData collision)
-    {
-        return CollisionSolvers.SphereVsPlaneCollision(new Sphere(collider.transform.position, collider.Radius), new Plane(Normal, transform.position), out collision);
-    }
-
-    public override bool TestCollisionWith(JPlaneCollider collider, out CollisionData collision)
-    {
-        collision = new CollisionData();
-        return false;
-    }
-
-    public override bool TestCollisionWith(JCuboidCollider collider, out CollisionData collision)
-    {
-        return CollisionSolvers.CuboidVsPlaneCollision(new Cuboid(collider.transform.position, collider.Dimensions / 2), new Plane(Normal, transform.position), out collision);
-    }
-
     public override Vector3 GetClosestPoint(Vector3 fromPoint, bool clampToEdge = false)
     {
         float dotProduct = Vector3.Dot(Normal, fromPoint);
