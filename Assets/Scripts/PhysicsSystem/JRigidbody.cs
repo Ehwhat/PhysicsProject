@@ -129,11 +129,13 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
             Vector3 _acceleration = _currentForce / _mass;
             Velocity += _acceleration * dt;
+            Velocity *= 0.98f;
             transform.position += Velocity * dt;
 
             Vector3 angularAcceleration = _colliders[0].GetInverseTensor(Mass) * _currentTorque;
             AngularVelocity += angularAcceleration * dt;
-            transform.Rotate(AngularVelocity * dt);
+            AngularVelocity *= 0.98f;
+            transform.Rotate(AngularVelocity);
 
 
             lastForce = _currentForce;
@@ -183,8 +185,8 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
     private void OnDrawGizmos()
     {
-        Bounds bounds = GetBounds();
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireCube(bounds.center, bounds.size);
+        //Bounds bounds = GetBounds();
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawWireCube(bounds.center, bounds.size);
     }
 }

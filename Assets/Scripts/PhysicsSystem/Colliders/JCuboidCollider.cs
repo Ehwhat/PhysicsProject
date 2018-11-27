@@ -101,9 +101,13 @@ public class JCuboidCollider : JMeshCollider {
 
     public override Matrix4x4 GetInverseTensor(float mass)
     {
-        Vector3 DimensionSquared = Dimensions;
-        DimensionSquared.Scale(Dimensions);
-        float multiplier = (1.0f / 12f);
+        if(mass <= 0)
+        {
+            return Matrix4x4.zero;
+        }
+
+        Vector3 DimensionSquared = new Vector3(Dimensions.x * Dimensions.x, Dimensions.y * Dimensions.y, Dimensions.z * Dimensions.z);
+        float multiplier = (1.0f / 12.0f);
 
         float xComponent = (DimensionSquared.y + DimensionSquared.z) * mass * multiplier;
         float yComponent = (DimensionSquared.x + DimensionSquared.z) * mass * multiplier;
@@ -120,18 +124,18 @@ public class JCuboidCollider : JMeshCollider {
 
     private void OnDrawGizmos()
     {
-        GenerateBounds();
-        var oldMatrix = Gizmos.matrix;
-        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+        //GenerateBounds();
+        //var oldMatrix = Gizmos.matrix;
+        //Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
 
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(Vector3.zero, Dimensions);
+        //Gizmos.color = Color.green;
+        //Gizmos.DrawWireCube(Vector3.zero, Dimensions);
 
-        Gizmos.matrix = oldMatrix;
+        //Gizmos.matrix = oldMatrix;
 
-        Vector3 closestPoint = GetClosestPoint(_testTransform.position);
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(closestPoint, 0.1f);
+        //Vector3 closestPoint = GetClosestPoint(_testTransform.position);
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawSphere(closestPoint, 0.1f);
     }
 
     public override Vector3[] GetVertices()
@@ -143,16 +147,14 @@ public class JCuboidCollider : JMeshCollider {
         Vector3 right = transform.right;
         Vector3 forward = transform.forward;
 
-        verts[0] = position - (right * Extents.x) - (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMin.z);
-        verts[1] = position + (right * Extents.x) + (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMax.z);
-
-        verts[2] = position + (right * Extents.x) - (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMin.z);
-        verts[3] = position - (right * Extents.x) + (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMin.z);
-        verts[4] = position - (right * Extents.x) - (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMin.y, GlobalMax.z);
-
-        verts[5] = position + (right * Extents.x) + (up * Extents.y) - (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMax.y, GlobalMin.z);
-        verts[6] = position + (right * Extents.x) - (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMax.x, GlobalMin.y, GlobalMax.z);
-        verts[7] = position - (right * Extents.x) + (up * Extents.y) + (forward * Extents.z); //new Vector3(GlobalMin.x, GlobalMax.y, GlobalMax.z);
+        verts[0] = position + (right * Extents.x) + (up * Extents.y) + (forward * Extents.z);
+        verts[1] = position - (right * Extents.x) + (up * Extents.y) + (forward * Extents.z);
+        verts[2] = position + (right * Extents.x) - (up * Extents.y) + (forward * Extents.z);
+        verts[3] = position + (right * Extents.x) + (up * Extents.y) - (forward * Extents.z);
+        verts[4] = position - (right * Extents.x) - (up * Extents.y) - (forward * Extents.z);
+        verts[5] = position + (right * Extents.x) - (up * Extents.y) - (forward * Extents.z);
+        verts[6] = position - (right * Extents.x) + (up * Extents.y) - (forward * Extents.z);
+        verts[7] = position - (right * Extents.x) - (up * Extents.y) + (forward * Extents.z);
 
         return verts;
     }
@@ -162,38 +164,39 @@ public class JCuboidCollider : JMeshCollider {
         Vector3[] verts = GetVertices();
         JLineSegment[] edges = new JLineSegment[12];
 
-        edges[0] = new JLineSegment(verts[0], verts[5]);
-        edges[1] = new JLineSegment(verts[0], verts[6]);
-        edges[2] = new JLineSegment(verts[0], verts[7]);
+        edges[0] = new JLineSegment(verts[6], verts[1]);
+        edges[1] = new JLineSegment(verts[6], verts[3]);
+        edges[2] = new JLineSegment(verts[6], verts[4]);
 
-        edges[3] = new JLineSegment(verts[1], verts[2]);
-        edges[4] = new JLineSegment(verts[1], verts[3]);
-        edges[5] = new JLineSegment(verts[1], verts[4]);
+        edges[3] = new JLineSegment(verts[2], verts[7]);
+        edges[4] = new JLineSegment(verts[2], verts[5]);
+        edges[5] = new JLineSegment(verts[2], verts[0]);
 
-        edges[6] = new JLineSegment(verts[2], verts[6]);
-        edges[7] = new JLineSegment(verts[2], verts[5]);
+        edges[6] = new JLineSegment(verts[0], verts[1]);
+        edges[7] = new JLineSegment(verts[0], verts[3]);
 
-        edges[8] = new JLineSegment(verts[3], verts[5]);
-        edges[9] = new JLineSegment(verts[3], verts[7]);
+        edges[8] = new JLineSegment(verts[7], verts[1]);
+        edges[9] = new JLineSegment(verts[7], verts[4]);
 
-        edges[10] = new JLineSegment(verts[4], verts[6]);
-        edges[11] = new JLineSegment(verts[4], verts[7]);
+        edges[10] = new JLineSegment(verts[4], verts[5]);
+        edges[11] = new JLineSegment(verts[5], verts[3]);
 
         return edges;
     }
 
     public Plane[] GetPlanes()
     {
+        Vector3 pos = transform.position;
         return new Plane[]
         {
-            new Plane(transform.right, Extents.x),
-            new Plane(-transform.right, Extents.x),
+            new Plane(transform.right, Vector3.Dot(transform.right,pos + transform.right * Extents.x)),
+            new Plane(transform.right * -1, -Vector3.Dot(transform.right,pos - transform.right * Extents.x)),
 
-            new Plane(transform.up, Extents.y),
-            new Plane(-transform.up, Extents.y),
+            new Plane(transform.up, Vector3.Dot(transform.up,pos + transform.up * Extents.y)),
+            new Plane(transform.up * -1, -Vector3.Dot(transform.up,pos - transform.up * Extents.y)),
 
-            new Plane(transform.forward, Extents.z),
-            new Plane(-transform.forward, Extents.z)
+            new Plane(transform.forward, Vector3.Dot(transform.forward,pos + transform.forward * Extents.z)),
+            new Plane(transform.forward * -1, -Vector3.Dot(transform.forward,pos - transform.forward * Extents.z))
 
         };
     }
@@ -202,14 +205,31 @@ public class JCuboidCollider : JMeshCollider {
     {
         Gizmos.color = Color.red;
         Bounds bounds = GenerateBounds();
-        Gizmos.DrawWireCube(transform.position, bounds.size);
+
+        JLineSegment[] edges = GetEdges();
+
+        for (int i = 0; i < edges.Length; i++)
+        {
+            Gizmos.DrawLine(edges[i].Start, edges[i].End);
+        }
+
 
         Vector3[] verts = GetVertices();
 
         for (int i = 0; i < verts.Length; i++)
         {
             Gizmos.DrawSphere(verts[i], 0.1f);
+            
         }
+
+        Plane[] planes = GetPlanes();
+
+        for (int i = 0; i < planes.Length; i++)
+        {
+            Gizmos.DrawRay(transform.position, planes[i].normal);
+        }
+
+
 
         Gizmos.color = Color.cyan;
 
