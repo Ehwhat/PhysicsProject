@@ -7,10 +7,13 @@ public abstract class JSATSolver<T1,T2> : JCollisionSolver<T1, T2> where T1:JMes
 
     protected bool IsOverlapping(JMeshCollider colliderA, JMeshCollider colliderB)
     {
+        Vector3[] colliderAVerts = colliderA.GetVertices();
+        Vector3[] colliderBVerts = colliderB.GetVertices();
+
         Vector3[] axesOfSeperation = GetAxesOfSeperation(colliderA, colliderB);
         for (int i = 0; i < 15; i++)
         {
-            if(!IsOverlapingOnAxis(colliderA,colliderB, axesOfSeperation[i]))
+            if(!IsOverlapingOnAxis(colliderAVerts, colliderBVerts, axesOfSeperation[i]))
             {
                 return false;
             }
@@ -45,10 +48,10 @@ public abstract class JSATSolver<T1,T2> : JCollisionSolver<T1, T2> where T1:JMes
         };
     }
 
-    protected bool IsOverlapingOnAxis(JMeshCollider colliderA, JMeshCollider colliderB, Vector3 axis)
+    protected bool IsOverlapingOnAxis(Vector3[] colliderAVerts, Vector3[] colliderBVerts, Vector3 axis)
     {
-        JSegment segmentA = JMeshCollider.GetMeshSegmentOnAxis(colliderA, axis);
-        JSegment segmentB = JMeshCollider.GetMeshSegmentOnAxis(colliderB, axis);
+        JSegment segmentA = JMeshCollider.GetMeshSegmentOnAxis(colliderAVerts, axis);
+        JSegment segmentB = JMeshCollider.GetMeshSegmentOnAxis(colliderBVerts, axis);
         return JSegment.IsOverlapping(segmentA, segmentB);
     }
 

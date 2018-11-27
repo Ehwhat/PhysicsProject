@@ -43,10 +43,12 @@ public class JCuboidCollider : JMeshCollider {
 
     public override Bounds GenerateBounds()
     {
+        Vector3[] verts = GetVertices();
+
         Vector3 MinMaxDimensions = new Vector3(
-            GetMeshSegmentOnAxis(this, Vector3.left).Length,
-            GetMeshSegmentOnAxis(this, Vector3.up).Length,
-            GetMeshSegmentOnAxis(this, Vector3.forward).Length
+            GetMeshSegmentOnAxis(verts, Vector3.left).Length,
+            GetMeshSegmentOnAxis(verts, Vector3.up).Length,
+            GetMeshSegmentOnAxis(verts, Vector3.forward).Length
             );
         bounds = new Bounds(Vector3.zero, MinMaxDimensions);
         return bounds;
@@ -86,6 +88,25 @@ public class JCuboidCollider : JMeshCollider {
 
     public override bool IsPointInside(Vector3 point)
     {
+        //Vector3 dir = point - transform.position;
+
+        //Vector3[] axes = new Vector3[]
+        //{
+        //    transform.right,
+        //    transform.up,
+        //    transform.forward
+        //};
+
+        //for (int i = 0; i < 3; i++)
+        //{
+        //    float dist = Vector3.Dot(dir, axes[i]);
+        //    if(dist > Extents[i] || dist < -Extents[i])
+        //    {
+        //        return false;
+        //    }
+        //}
+        //return true;
+
         Vector3 localPoint = transform.InverseTransformPoint(point);
 
         return

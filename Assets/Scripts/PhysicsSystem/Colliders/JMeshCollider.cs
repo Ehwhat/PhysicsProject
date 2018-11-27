@@ -6,9 +6,8 @@ public abstract class JMeshCollider : JCollider {
 
     public abstract Vector3[] GetVertices();
 
-    public static JSegment GetMeshSegmentOnAxis(JMeshCollider mesh, Vector3 axis)
+    public static JSegment GetMeshSegmentOnAxis(Vector3[] vertices, Vector3 axis)
     {
-        Vector3[] vertices = mesh.GetVertices();
         float projection = Vector3.Dot(axis, vertices[0]);
         JSegment segment = new JSegment(projection, projection);
 

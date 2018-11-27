@@ -14,13 +14,16 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
         collision.colliderA = colliderA;
         collision.colliderB = colliderB;
 
+        Vector3[] colliderAVerts = colliderA.GetVertices();
+        Vector3[] colliderBVerts = colliderB.GetVertices();
+
         for (int i = 0; i < axesOfSeperation.Length; i++)
         {
             if (Vector3.SqrMagnitude(axesOfSeperation[i]) < 0.001f)// If out axis has a length of 0, some false positives can happen, soooooo lets just not do that
             {
                 continue;
             }
-            float depth = FindPenetrationDepth(colliderA, colliderB, axesOfSeperation[i], out shouldFlip);
+            float depth = FindPenetrationDepth(colliderAVerts, colliderBVerts, axesOfSeperation[i], out shouldFlip);
             if(depth <= 0)
             {
                 return false;
@@ -42,7 +45,7 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
 
         
 
-        JSegment meshSegment = JMeshCollider.GetMeshSegmentOnAxis(colliderA, sharedPlaneAxis);
+        JSegment meshSegment = JMeshCollider.GetMeshSegmentOnAxis(colliderAVerts, sharedPlaneAxis);
         float distance = (meshSegment.Length * 0.5f) - (collision.collisionDepth * 0.5f);
         Vector3 pointOnPlane = colliderA.transform.position + sharedPlaneAxis * distance;
 
@@ -70,10 +73,10 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
         return collision.valid;
     }
 
-    private float FindPenetrationDepth(JCuboidCollider colliderA, JCuboidCollider colliderB, Vector3 axis, out bool flipNormals) // 😏
+    private float FindPenetrationDepth(Vector3[] colliderAVertices, Vector3[] colliderBVertices, Vector3 axis, out bool flipNormals) // 😏
     {
-        JSegment segmentA = JMeshCollider.GetMeshSegmentOnAxis(colliderA, axis.normalized);
-        JSegment segmentB = JMeshCollider.GetMeshSegmentOnAxis(colliderB, axis.normalized);
+        JSegment segmentA = JMeshCollider.GetMeshSegmentOnAxis(colliderAVertices, axis.normalized);
+        JSegment segmentB = JMeshCollider.GetMeshSegmentOnAxis(colliderBVertices, axis.normalized);
 
         flipNormals = (segmentB.Min < segmentA.Min);
 
@@ -98,6 +101,7 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
 
         List<Vector3> points = new List<Vector3>(edges.Length);
         Vector3 intersection;
+        int pointsFound = 0;
 
         for (int i = 0; i < planes.Length; i++)
         {
@@ -105,8 +109,15 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
             {
                 if(edges[j].IntersectWithPlane(planes[i], out intersection))
                 {
-                    if(colliderB.IsPointInside(intersection))
+                    if (colliderB.IsPointInside(intersection))
+                    {
                         points.Add(intersection);
+                        pointsFound++;
+                        if(pointsFound > 4)
+                        {
+                            return points;
+                        }
+                    }
 
                 }
             }
