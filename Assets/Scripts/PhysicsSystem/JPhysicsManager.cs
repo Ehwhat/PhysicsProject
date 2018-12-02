@@ -8,7 +8,7 @@ public class JPhysicsManager : MonoBehaviour {
     [Range(0,4)]
     public float epsilon = 0;
     private static List<JRigidbody> _bodies = new List<JRigidbody>();
-    private List<JCollision> _frameCollisions = new List<JCollision>();
+    private Dictionary<CompareablePair<JRigidbody>,JCollision> collisions = new Dictionary<CompareablePair<JRigidbody>, JCollision>();
 
     private bool wasHit = false;
     private Vector3 testPoint;
@@ -81,14 +81,14 @@ public class JPhysicsManager : MonoBehaviour {
 
     private void FixedUpdate()
     {
+        CheckAllBodiesForCollisions();
         SimulateBodies();
         for (int i = 0; i < SolverIterations; i++)
         {
-            CheckAllBodiesForCollisions();
             SolveFrameCollisions();
-            for (int j = 0; j < _frameCollisions.Count; j++)
+            for (int j = 0; j < collisions.Count; j++)
             {
-                CorrectPositions(_frameCollisions[j]);
+                CorrectPositions(collisions[j]);
             }
         }
     }
@@ -101,11 +101,33 @@ public class JPhysicsManager : MonoBehaviour {
         }
     }
 
+    private void PreUpdateCollisions()
+    {
+        foreach (JCollision collision in collisions.Values)
+        {
+
+            JRigidbody bodyA = collision.colliderA.owningBody;
+            JRigidbody bodyB = collision.colliderB.owningBody;
+
+            foreach (JContact contact in collision.contacts)
+            {
+                Vector3 localContactPointA = contact.position - bodyA.transform.position;
+                Vector3 localContactPointB = contact.position - bodyB.transform.position;
+
+                float localNormalDotA = Vector3.Dot(localContactPointA, contact.normal);
+                float localNormalDotB = Vector3.Dot(localContactPointB, contact.normal);
+
+                contact.normalMass = bodyA._colliders[0].GetInverseTensor(bodyA.Mass).
+
+            }
+        }
+    }
+
     private void SolveFrameCollisions()
     {
-        for (int i = 0; i < _frameCollisions.Count; i++)
+        for (int i = 0; i < collisions.Count; i++)
         {
-            JCollision collision = _frameCollisions[i];
+            JCollision collision = collisions[i];
             JRigidbody bodyA = collision.colliderA.owningBody;
             JRigidbody bodyB = collision.colliderB.owningBody;
             if(bodyA == null || bodyB == null)
@@ -126,7 +148,7 @@ public class JPhysicsManager : MonoBehaviour {
                 Vector3 relativeContactPointA = collision.collisionPoints[c] - bodyA.transform.position;
                 Vector3 relativeContactPointB = collision.collisionPoints[c] - bodyB.transform.position;
 
-                Vector3 contactVelocity = 
+                Vector3 contactVelocity =
                     ((velocityB + Vector3.Cross(bodyB.AngularVelocity, relativeContactPointB)) -
                     (velocityA + Vector3.Cross(bodyA.AngularVelocity, relativeContactPointA)));
                 float reactionForceMagnitude = Vector3.Dot(contactVelocity, normal);
@@ -142,7 +164,7 @@ public class JPhysicsManager : MonoBehaviour {
                 Vector3 d2 = Vector3.Cross(invTensorA * Vector3.Cross(relativeContactPointA, normal), relativeContactPointA);
                 Vector3 d3 = Vector3.Cross(invTensorB * Vector3.Cross(relativeContactPointB, normal), relativeContactPointB);
                 float denominator = d1 + Vector3.Dot(normal, d2 + d3);
-            
+
                 float j = (denominator == 0) ? 0 : (numerator / denominator);
                 j /= (float)collision.collisionPoints.Count;
 
@@ -158,73 +180,73 @@ public class JPhysicsManager : MonoBehaviour {
 
 
 
-                //Vector3 tangent = (contactVelocity - (Vector3.Dot(contactVelocity, normal) * normal)).normalized;
-                //float staticFrictionAverage = PythSolver(bodyA.StaticFriction, bodyB.StaticFriction);
-                //float dynamicFrictionAverage = PythSolver(bodyA.DynamicFriction, bodyB.DynamicFriction);
+                //    Vector3 tangent = (contactVelocity - (Vector3.Dot(contactVelocity, normal) * normal)).normalized;
+                //    float staticFrictionAverage = PythSolver(bodyA.StaticFriction, bodyB.StaticFriction);
+                //    float dynamicFrictionAverage = PythSolver(bodyA.DynamicFriction, bodyB.DynamicFriction);
 
-                //numerator = -Vector3.Dot(contactVelocity, tangent);
+                //    numerator = -Vector3.Dot(contactVelocity, tangent);
 
-                //d1 = (bodyA.GetInvMass() + bodyB.GetInvMass());
-                //d2 = Vector3.Cross(invTensorA * Vector3.Cross(relativeContactPointA, tangent), relativeContactPointA);
-                //d3 = Vector3.Cross(invTensorB * Vector3.Cross(relativeContactPointB, tangent), relativeContactPointB);
-                //denominator = d1 + Vector3.Dot(tangent, d2 + d3);
+                //    d1 = (bodyA.GetInvMass() + bodyB.GetInvMass());
+                //    d2 = Vector3.Cross(invTensorA * Vector3.Cross(relativeContactPointA, tangent), relativeContactPointA);
+                //    d3 = Vector3.Cross(invTensorB * Vector3.Cross(relativeContactPointB, tangent), relativeContactPointB);
+                //    denominator = d1 + Vector3.Dot(tangent, d2 + d3);
 
-                //if (denominator == 0)
-                //{
-                //    continue;
+                //    if (denominator == 0)
+                //    {
+                //        continue;
+                //    }
+
+
+
+                //    float jt = (numerator / denominator) / (float)collision.collisionPoints.Count;
+
+                //    if (jt <= 0)
+                //    {
+                //        continue;
+                //    }
+
+                //    Debug.Log("test");
+
+
+                //    if (jt > j * dynamicFrictionAverage)
+                //    {
+                //        jt = j * dynamicFrictionAverage;
+                //    }
+                //    else if (jt < -j * dynamicFrictionAverage)
+                //    {
+                //        jt = -j * dynamicFrictionAverage;
+                //    }
+
+                //    Vector3 tangentImpulse = tangent * jt;
+
+                //    bodyA.SetVelocity(bodyA.Velocity - (tangentImpulse * bodyA.GetInvMass()));
+                //    bodyB.SetVelocity(bodyB.Velocity + (tangentImpulse * bodyB.GetInvMass()));
+
+                //    bodyA.AngularVelocity = bodyA.AngularVelocity - (Vector3)(invTensorA * Vector3.Cross(relativeContactPointA, impulseReactionForce));
+                //    bodyB.AngularVelocity = bodyB.AngularVelocity + (Vector3)(invTensorB * Vector3.Cross(relativeContactPointB, impulseReactionForce));
                 //}
 
-
-
-                //float jt = (numerator / denominator) / (float)collision.collisionPoints.Count;
-
-                //if (jt <= 0)
+                //if(Mathf.Abs(bodyA.Velocity.magnitude) < 0.1f)
                 //{
-                //    continue;
+                //    bodyA.SetVelocity(Vector3.zero);
                 //}
 
-                //Debug.Log("test");
-
-
-                //if (jt > j * dynamicFrictionAverage)
+                //if (Mathf.Abs(bodyB.Velocity.magnitude) < 0.1f)
                 //{
-                //    jt = j * dynamicFrictionAverage;
-                //}
-                //else if (jt < -j * dynamicFrictionAverage)
-                //{
-                //    jt = -j * dynamicFrictionAverage;
+                //    bodyB.SetVelocity(Vector3.zero);
                 //}
 
-                //Vector3 tangentImpulse = tangent * jt;
+                //if (Mathf.Abs(bodyA.AngularVelocity.magnitude) < 0.1f)
+                //{
+                //    bodyA.AngularVelocity = (Vector3.zero);
+                //}
 
-                //bodyA.SetVelocity(bodyA.Velocity - (tangentImpulse * bodyA.GetInvMass()));
-                //bodyB.SetVelocity(bodyB.Velocity + (tangentImpulse * bodyB.GetInvMass()));
+                //if (Mathf.Abs(bodyB.AngularVelocity.magnitude) < 0.1f)
+                //{
+                //    bodyB.AngularVelocity = (Vector3.zero);
+                //}
 
-                //bodyA.AngularVelocity = bodyA.AngularVelocity - (Vector3)(invTensorA * Vector3.Cross(relativeContactPointA, impulseReactionForce));
-                //bodyB.AngularVelocity = bodyB.AngularVelocity + (Vector3)(invTensorB * Vector3.Cross(relativeContactPointB, impulseReactionForce));
             }
-
-            if(Mathf.Abs(bodyA.Velocity.magnitude) < 0.1f)
-            {
-                bodyA.SetVelocity(Vector3.zero);
-            }
-
-            if (Mathf.Abs(bodyB.Velocity.magnitude) < 0.1f)
-            {
-                bodyB.SetVelocity(Vector3.zero);
-            }
-
-            if (Mathf.Abs(bodyA.AngularVelocity.magnitude) < 0.1f)
-            {
-                bodyA.AngularVelocity = (Vector3.zero);
-            }
-
-            if (Mathf.Abs(bodyB.AngularVelocity.magnitude) < 0.1f)
-            {
-                bodyB.AngularVelocity = (Vector3.zero);
-            }
-
-
         }
     }
 
@@ -256,47 +278,54 @@ public class JPhysicsManager : MonoBehaviour {
 
     private void CheckAllBodiesForCollisions()
     {
-        HashSet<CompareablePair<JRigidbody>> checkedPairs = new HashSet<CompareablePair<JRigidbody>>();
-        _frameCollisions = new List<JCollision>();
         for (int i = 0; i < _bodies.Count; i++)
         {
-            for (int j = 0; j < _bodies.Count; j++)
+            for (int j = i+1; j < _bodies.Count; j++)
             {
-                if (i == j) continue;
-                CompareablePair<JRigidbody> pair = new CompareablePair<JRigidbody>(_bodies[i], _bodies[j]);
-                if (!checkedPairs.Contains(pair))
+
+                if(_bodies[i].GetInvMass() == 0 && _bodies[i].GetInvMass() == 0)
                 {
-                    GetBodyCollisions(_bodies[i], _bodies[j], ref _frameCollisions);
-                    checkedPairs.Add(pair);
+                    continue;
+                }
+
+                CompareablePair<JRigidbody> pair = new CompareablePair<JRigidbody>(_bodies[i], _bodies[j]);
+                JCollision collision;
+                if (GetBodyCollisions(_bodies[i], _bodies[j], out collision))
+                {
+                    if (collisions.ContainsKey(pair))
+                    {
+                        
+                    }
+                    else
+                    {
+                        collisions.Add(pair, collision);
+                    }
+                }
+                else
+                {
+                    collisions.Remove(pair);
                 }
             }
         }
     }
 
-    private bool GetBodyCollisions(JRigidbody bodyA, JRigidbody bodyB, ref List<JCollision> collisions)
+    private bool GetBodyCollisions(JRigidbody bodyA, JRigidbody bodyB, out JCollision collision)
     {
         if(CheckIfBoundsCollide(bodyA.GetBounds(), bodyB.GetBounds()))
         {
-            return GetBodyCollisionsWithColliders(bodyA, bodyB, ref collisions);
+            return GetBodyCollisionsWithColliders(bodyA, bodyB, out collision);
         }
+        collision = new JCollision();
         return false;
     }
 
-    private bool GetBodyCollisionsWithColliders(JRigidbody bodyA, JRigidbody bodyB, ref List<JCollision> collisions)
+    private bool GetBodyCollisionsWithColliders(JRigidbody bodyA, JRigidbody bodyB, out JCollision collision)
     {
         JCollider[] collidersA = bodyA.GetColliders();
         JCollider[] collidersB = bodyB.GetColliders();
-        for (int i = 0; i < collidersA.Length; i++)
+        if (JCollisionSolver.SolveCollision(collidersA[0], collidersB[0], out collision))
         {
-            
-            for (int j = 0; j < collidersB.Length; j++)
-            {
-                JCollision collision;
-                if (JCollisionSolver.SolveCollision(collidersA[i], collidersB[j], out collision))
-                {
-                    collisions.Add(collision);
-                }
-            }
+            return true;
         }
         return false ;
     }
@@ -312,15 +341,6 @@ public class JPhysicsManager : MonoBehaviour {
         if (wasHit)
         {
             Gizmos.DrawSphere(testPoint, 0.1f);
-        }
-        Gizmos.color = Color.blue;
-        for (int i = 0; i < _frameCollisions.Count; i++)
-        {
-            JCollision collision = _frameCollisions[i];
-            for (int j = 0; j < collision.collisionPoints.Count; j++)
-            {
-                Gizmos.DrawSphere(collision.collisionPoints[j], 0.1f);
-            }
         }
     }
 

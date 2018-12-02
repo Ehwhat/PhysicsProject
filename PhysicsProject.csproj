@@ -237,6 +237,7 @@
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\CollisionSolvers.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\IJBounds.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\IJVertexMesh.cs" />
+    <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\JContact.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\JLineSegment.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\JSegment.cs" />
     <Compile Include="Assets\Scripts\PhysicsSystem\Abstraction\Shapes.cs" />

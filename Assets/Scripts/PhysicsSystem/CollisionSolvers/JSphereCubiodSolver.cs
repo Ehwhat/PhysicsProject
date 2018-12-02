@@ -15,7 +15,7 @@ public class JSphereCuboidSolver : JCollisionSolver<JSphereCollider, JCuboidColl
         if (colliderB.IsPointInside(closestPointB))
         {
             float collisionDepth = Vector3.Distance(closestPointA, closestPointB);
-            Vector3 collisionNormal = (closestPointA - closestPointB).normalized;
+            Vector3 collisionNormal = -(closestPointA - closestPointB).normalized;
             List<Vector3> contacts = new List<Vector3>() { closestPointA + (closestPointB * 0.5f) };
 
             collision = new JCollision(contacts, collisionNormal, collisionDepth, colliderA, colliderB);

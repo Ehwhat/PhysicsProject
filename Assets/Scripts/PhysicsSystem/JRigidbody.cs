@@ -129,12 +129,10 @@ public class JRigidbody : MonoBehaviour, IJBounds {
 
             Vector3 _acceleration = _currentForce / _mass;
             Velocity += _acceleration * dt;
-            Velocity *= 0.98f;
             transform.position += Velocity * dt;
 
             Vector3 angularAcceleration = _colliders[0].GetInverseTensor(Mass) * _currentTorque;
             AngularVelocity += angularAcceleration * dt;
-            AngularVelocity *= 0.98f;
             transform.Rotate(AngularVelocity, Space.World);
 
 

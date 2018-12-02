@@ -3,52 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class JCollision {
+public struct JCollision {
 
-    public bool valid = false;
+    public bool valid;
 
-    public Vector3 collisionNormal = Vector3.zero;
-    public float collisionDepth = 0;
-    public List<Vector3> collisionPoints = new List<Vector3>();
+    public List<JContact> contacts;
 
     public JCollider colliderA;
 
     public JCollider colliderB;
-
-    public JCollision()
-    {
-        valid = false;
-    }
-
-    public JCollision(List<Vector3> points, Vector3 normal, float depth, JCollider colliderA, JCollider colliderB)
-    {
-        valid = true;
-        collisionPoints = points;
-        collisionNormal = normal;
-        collisionDepth = depth;
-        this.colliderA = colliderA;
-        this.colliderB = colliderB;
-    }
 
     public JCollision(JCollider colliderA, JCollider colliderB)
     {
         valid = false;
         this.colliderA = colliderA;
         this.colliderB = colliderB;
+        contacts = new List<JContact>();
     }
 
-    public Vector3 AverageCollisionPoint()
+    public void AddContact(Vector3 position, Vector3 normal, float depth)
     {
-        if(collisionPoints.Count < 1)
-        {
-            return Vector3.zero;
-        }
-        Vector3 result = collisionPoints[0];
-        for (int i = 1; i < collisionPoints.Count; i++)
-        {
-            result += collisionPoints[i];
-        }
-        return result /= collisionPoints.Count;
+        contacts.Add(new JContact(position, normal, depth));
+    }
+
+    public void AddContact(JContact contact)
+    {
+        contacts.Add(contact);
     }
 
     public override bool Equals(object obj)

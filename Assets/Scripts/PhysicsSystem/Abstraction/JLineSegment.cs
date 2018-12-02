@@ -60,7 +60,7 @@ public struct JLineSegment {
         return cachedLengthSqr;
     }
 
-    public bool IntersectWithPlane(Plane plane, out Vector3 hitPoint)
+    public bool IntersectWithPlane(Plane plane, out Vector3 hitPoint, out float hitDistance)
     {
         Vector3 lineVector = End - Start;
         float fullDotLength = Vector3.Dot(plane.normal, lineVector);
@@ -71,9 +71,11 @@ public struct JLineSegment {
         if(timeOfIntersection >= 0 && timeOfIntersection <= 1)
         {
             hitPoint = Start + lineVector * timeOfIntersection;
+            hitDistance = (1 - timeOfIntersection) * Length;
             return true;
         }
         hitPoint = Vector3.zero;
+        hitDistance = 0;
         return false;
     }
 

@@ -6,13 +6,11 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
 {
     protected override bool CheckCollision(JCuboidCollider colliderA, JCuboidCollider colliderB, out JCollision collision)
     {
-        collision = new JCollision();
+        collision = new JCollision(colliderA, colliderB);
         Vector3[] axesOfSeperation = GetAxesOfSeperation(colliderA, colliderB);
         Vector3 normal = Vector3.zero;
+        float bestDepth = float.PositiveInfinity;
         bool shouldFlip = false;
-        collision.collisionDepth = float.PositiveInfinity;
-        collision.colliderA = colliderA;
-        collision.colliderB = colliderB;
 
         Vector3[] colliderAVerts = colliderA.GetVertices();
         Vector3[] colliderBVerts = colliderB.GetVertices();
@@ -27,9 +25,9 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
             if(depth <= 0)
             {
                 return false;
-            }else if(depth < collision.collisionDepth)
+            }else if(depth < bestDepth)
             {
-                collision.collisionDepth = depth;
+                bestDepth = depth;
                 normal = shouldFlip ? axesOfSeperation[i] * -1.0f :  axesOfSeperation[i];
             }
         }
@@ -46,10 +44,8 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
         
 
         JSegment meshSegment = JMeshCollider.GetMeshSegmentOnAxis(colliderAVerts, sharedPlaneAxis);
-        float distance = (meshSegment.Length * 0.5f) - (collision.collisionDepth * 0.5f);
+        float distance = (meshSegment.Length * 0.5f) - (bestDepth * 0.5f);
         Vector3 pointOnPlane = colliderA.transform.position + sharedPlaneAxis * distance;
-
-        collision.collisionNormal = sharedPlaneAxis;
 
         collision.valid = contacts.Count > 0;
 
@@ -59,13 +55,13 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
             contact = contact + (sharedPlaneAxis * Vector3.Dot(sharedPlaneAxis, pointOnPlane - contact));
 
             bool unique = true;
-            for (int j = 0; j < collision.collisionPoints.Count; j++)
+            for (int j = 0; j < collision.contacts.Count; j++)
             {
-                if (Vector3.Distance(contact,collision.collisionPoints[j]) < 0.2f)
+                if (Vector3.Distance(contact,collision.contacts[j].position) < 0.2f)
                     unique = false;
             }
             if(unique)
-                collision.collisionPoints.Add(contact);
+                collision.AddContact(contact, sharedPlaneAxis, bestDepth);
         }
 
 
@@ -101,13 +97,14 @@ public class JCuboidCuboidSolver : JSATSolver<JCuboidCollider, JCuboidCollider>
 
         List<Vector3> points = new List<Vector3>(edges.Length);
         Vector3 intersection;
+        float hitDistance;
         int pointsFound = 0;
 
         for (int i = 0; i < planes.Length; i++)
         {
             for (int j = 0; j < edges.Length; j++)
             {
-                if(edges[j].IntersectWithPlane(planes[i], out intersection))
+                if(edges[j].IntersectWithPlane(planes[i], out intersection, out hitDistance))
                 {
                     if (colliderB.IsPointInside(intersection))
                     {
